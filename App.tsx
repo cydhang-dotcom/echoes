@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ForestMap from './components/ForestMap';
 import PlantingOverlay from './components/PlantingOverlay';
 import SeedDetail from './components/SeedDetail';
 import GardenView from './components/GardenView';
-import { generatePoeticLocation } from './services/geminiService';
-import { Coordinates, MoodType, Seed, ViewState } from './types';
+import { Coordinates, MoodType, Seed, ViewState, WeatherType } from './types';
 import { MOCK_SEEDS, DEFAULT_LOCATION } from './constants';
 
 const App: React.FC = () => {
@@ -12,30 +11,47 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>(ViewState.WALK);
   // Default to Shanghai Shuangzi Mountain
   const [userLocation, setUserLocation] = useState<Coordinates>(DEFAULT_LOCATION); 
-  const [poeticLocation, setPoeticLocation] = useState<string>("上海 · 双子山");
   const [seeds, setSeeds] = useState<Seed[]>(MOCK_SEEDS);
   const [selectedSeed, setSelectedSeed] = useState<Seed | null>(null);
   const [mySeeds, setMySeeds] = useState<Seed[]>([]);
   
+  // Weather & Time State
+  // Default weather set to RAINY as requested
+  const [weather, setWeather] = useState<WeatherType>('RAINY');
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   // Simulation: No actual Geolocation API call
   useEffect(() => {
     console.log("模拟模式：已定位到上海双子山");
-    // In a real app, this would watch position. 
-    // Here we just keep the default static location.
+    
+    // Previously randomized weather. Now commented out to keep default 'RAINY'.
+    // const weathers: WeatherType[] = ['SUNNY', 'RAINY', 'WINDY', 'CLOUDY'];
+    // const randomWeather = weathers[Math.floor(Math.random() * weathers.length)];
+    // setWeather(randomWeather);
   }, []);
 
-  // Effect to update poetic location periodically 
-  // In simulation, we stick to the default unless manually changed, 
-  // but we keep the logic structure if we wanted to use AI to describe the fixed location.
+  // Time ticker
   useEffect(() => {
-    // Optional: Call AI to describe the fixed location, or just keep the hardcoded string.
-    // We'll keep the hardcoded "上海 · 双子山" for the specific requirement.
-    // const updatePoetic = async () => {
-    //    const desc = await generatePoeticLocation(userLocation.latitude, userLocation.longitude);
-    //    setPoeticLocation(desc);
-    // };
-    // updatePoetic();
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000 * 60); // Update every minute
+    return () => clearInterval(timer);
   }, []);
+
+  // Construct Poetic Location String dynamically based on weather + time
+  const poeticLocation = useMemo(() => {
+    const timeStr = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let context = "";
+
+    switch (weather) {
+      case 'SUNNY': context = "阳光透过叶隙"; break;
+      case 'RAINY': context = "微雨的双子山"; break;
+      case 'WINDY': context = "风吹过山坡"; break;
+      case 'CLOUDY': context = "云层很低"; break;
+    }
+
+    return `上海 · ${context} ${timeStr}`;
+  }, [weather, currentTime]);
 
   // Actions
   const handlePlant = (data: { mood: MoodType; text: string; audioBlob?: Blob }) => {
@@ -79,8 +95,10 @@ const App: React.FC = () => {
       
       {/* Top Bar - Poetic Location */}
       {view === ViewState.WALK && (
-        <div className="absolute top-0 left-0 w-full z-10 pt-12 pb-8 px-6 bg-gradient-to-b from-[#F9F7F2] to-transparent pointer-events-none text-center">
-            <h1 className="text-xl font-serif text-text tracking-wide shadow-sm">{poeticLocation}</h1>
+        <div className="absolute top-0 left-0 w-full z-10 pt-12 pb-8 px-6 bg-gradient-to-b from-[#F9F7F2] via-[#F9F7F2]/80 to-transparent pointer-events-none text-center">
+            <h1 className="text-lg font-serif text-text/80 tracking-wide shadow-sm transition-all duration-1000">
+              {poeticLocation}
+            </h1>
         </div>
       )}
 
@@ -90,7 +108,8 @@ const App: React.FC = () => {
           <ForestMap 
             userLocation={userLocation} 
             seeds={seeds} 
-            onSelectSeed={setSelectedSeed} 
+            onSelectSeed={setSelectedSeed}
+            weather={weather} 
           />
         )}
         

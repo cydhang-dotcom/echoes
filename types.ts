@@ -12,6 +12,8 @@ export enum MoodType {
   CALM = 'CALM'
 }
 
+export type WeatherType = 'SUNNY' | 'RAINY' | 'WINDY' | 'CLOUDY';
+
 export interface Coordinates {
   latitude: number;
   longitude: number;

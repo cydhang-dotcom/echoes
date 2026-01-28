@@ -30,6 +30,9 @@
               'breathe': 'breathe 4s ease-in-out infinite',
               'drift': 'drift 10s ease-in-out infinite alternate',
               'plant-drop': 'plantDrop 0.8s ease-in forwards',
+              'rain': 'rain 1s linear infinite',
+              'leaf': 'leaf 6s ease-in-out infinite',
+              'sun-pulse': 'sunPulse 8s ease-in-out infinite',
             },
             keyframes: {
               breathe: {
@@ -43,6 +46,22 @@
               plantDrop: {
                 '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
                 '100%': { transform: 'translateY(100vh) scale(0.5)', opacity: '0' },
+              },
+              rain: {
+                '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                '10%': { opacity: '0.6' },
+                '90%': { opacity: '0.6' },
+                '100%': { transform: 'translateY(100vh)', opacity: '0' },
+              },
+              leaf: {
+                '0%': { transform: 'translate(0, 0) rotate(0deg)', opacity: '0' },
+                '10%': { opacity: '0.8' },
+                '90%': { opacity: '0.8' },
+                '100%': { transform: 'translate(100vw, 40vh) rotate(360deg)', opacity: '0' },
+              },
+              sunPulse: {
+                 '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+                 '50%': { opacity: '0.6', transform: 'scale(1.2)' },
               }
             }
           }
