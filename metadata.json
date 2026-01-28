@@ -1,0 +1,9 @@
+{
+  "name": "Forest Whispers",
+  "description": "A slow-paced, organic social space rooted in the here and now. Plant your thoughts, gather nearby whispers.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
