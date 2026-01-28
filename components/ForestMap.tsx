@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Coordinates, Seed, WeatherType } from '../types';
-import { COLORS, GATHER_DISTANCE_METERS } from '../constants';
+import { COLORS, GATHER_DISTANCE_METERS, VISIBILITY_DISTANCE_METERS } from '../constants';
 
 interface ForestMapProps {
   userLocation: Coordinates;
@@ -86,11 +86,14 @@ const WeatherOverlay: React.FC<{ weather: WeatherType }> = ({ weather }) => {
 };
 
 const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed, weather }) => {
-  const [scale] = useState(200000); // Scale factor for visualization
+  // Increased scale to make 50m feel like a meaningful "room" size on screen
+  // 1 deg Lat approx 111km. 
+  // With scale 600,000 -> 1m approx 5.4px. 
+  // 50m radius -> ~270px from center.
+  const [scale] = useState(600000); 
 
   // Organic terrain lines
   const terrainPaths = useMemo(() => {
-    // If windy, animations could be faster or more pronounced
     const speedMultiplier = weather === 'WINDY' ? 0.5 : 1;
     
     return Array.from({ length: 5 }).map((_, i) => (
@@ -128,7 +131,8 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
       {/* User Indicator (Center) */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
         <div className="w-4 h-4 rounded-full bg-primary animate-breathe shadow-lg shadow-primary/30"></div>
-        <div className="absolute -inset-4 border border-primary/20 rounded-full animate-ping opacity-20"></div>
+        <div className="absolute -inset-12 border border-primary/5 rounded-full"></div>
+        <div className="absolute -inset-24 border border-primary/5 rounded-full border-dashed"></div>
       </div>
 
       {/* Seeds */}
@@ -142,14 +146,24 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
             seed.location.latitude, seed.location.longitude
         );
 
+        // If further than visibility range, do not render (keep it sparse and aesthetic)
+        if (distMeters > VISIBILITY_DISTANCE_METERS) return null;
+
         // Convert to pixel offset
         const xOffset = lngDiff * scale; 
         const yOffset = -latDiff * scale;
 
-        // Limit visibility
-        if (Math.abs(xOffset) > 200 || Math.abs(yOffset) > 350) return null;
-
+        // Interaction Logic
         const isReachable = distMeters < GATHER_DISTANCE_METERS;
+        
+        // Visual Logic (Interpolation)
+        // Range: 0m to 50m
+        // Opacity: 1 (at 0m) -> 0.2 (at 50m)
+        // Scale: 1 (at 0m) -> 0.4 (at 50m)
+        const visibilityFactor = 1 - (distMeters / VISIBILITY_DISTANCE_METERS);
+        const dynamicOpacity = 0.2 + (visibilityFactor * 0.8);
+        const dynamicScale = 0.4 + (visibilityFactor * 0.6);
+
         const color = COLORS.MOOD[seed.mood];
 
         return (
@@ -159,25 +173,41 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
             style={{
               marginLeft: `${xOffset}px`,
               marginTop: `${yOffset}px`,
-              opacity: isReachable ? 1 : 0.4,
-              scale: isReachable ? '1' : '0.6',
               zIndex: isReachable ? 30 : 10
             }}
             onClick={() => isReachable && onSelectSeed(seed)}
           >
              {/* The Seed Visual */}
-             <div 
-                className={`relative rounded-full transition-all duration-500 ${isReachable ? 'animate-breathe' : ''}`}
-                style={{
-                  width: isReachable ? '24px' : '12px',
-                  height: isReachable ? '24px' : '12px',
-                  backgroundColor: color,
-                  boxShadow: isReachable ? `0 0 15px 2px ${color}` : 'none'
-                }}
-             >
-             </div>
-             {isReachable && (
-               <span className="mt-2 text-[10px] font-serif text-text opacity-90 tracking-widest bg-white/50 px-2 py-0.5 rounded-full backdrop-blur-sm">拾起</span>
+             {isReachable ? (
+                // Interactable State: Big Light Point
+                <div className="relative flex flex-col items-center animate-breathe">
+                   <div 
+                      className="rounded-full blur-[2px]"
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: color,
+                        boxShadow: `0 0 20px 4px ${color}`
+                      }}
+                   />
+                   <div className="absolute top-0 left-0 w-full h-full bg-white/50 rounded-full animate-ping opacity-30"></div>
+                   <span className="mt-3 text-[10px] font-serif text-text opacity-90 tracking-widest bg-white/60 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
+                     拾起
+                   </span>
+                </div>
+             ) : (
+                // Distant State: Faint Seed
+                <div 
+                  className="rounded-full animate-pulse"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    backgroundColor: color,
+                    opacity: dynamicOpacity,
+                    transform: `scale(${dynamicScale})`,
+                    boxShadow: `0 0 10px 1px ${color}`
+                  }}
+                />
              )}
           </div>
         );
@@ -185,9 +215,11 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
 
       <div className="absolute bottom-24 left-0 w-full text-center pointer-events-none z-20">
         <p className="font-serif italic text-primary/60 text-sm tracking-wide">
-           {seeds.filter(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < GATHER_DISTANCE_METERS).length > 0 
-            ? "风里传来了一些回响..." 
-            : "附近的土壤很安静"}
+           {seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < GATHER_DISTANCE_METERS)
+            ? "这里有一颗种子在呼吸..." 
+            : seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < VISIBILITY_DISTANCE_METERS)
+              ? "远处有微弱的光点..."
+              : "附近的土壤很安静"}
         </p>
       </div>
     </div>

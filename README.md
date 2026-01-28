@@ -1,20 +1,57 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Zhíniàn植念
 
-# Run and deploy your AI Studio app
+> "风里传来了一些回响..."
 
-This contains everything you need to run your app locally.
+**Zhíniàn植念** 是一个反效率、重感知的精神休憩空间。它摒弃了现代社交网络的无限流与算法推荐，通过“此时此地 (Here & Now)”的物理距离限制，让用户在慢节奏的数字森林中埋藏心事、拾起共鸣。
 
-View your app in AI Studio: https://ai.studio/apps/drive/1X4SsHmgWqaDjEUX1Fj9EGDu7MOCTmifw
+[📄 查看完整产品需求文档 (PRD)](requirements.md)
 
-## Run Locally
+## 🌿 产品哲学 (Philosophy)
 
-**Prerequisites:**  Node.js
+- **慢科技 (Slow Tech)**: 无红点通知，无焦虑的数字体验。
+- **有机交互**: 界面采用模拟自然地形的流线设计，配合动态天气系统（微雨、光斑），营造沉浸式氛围。
+- **物理隐喻**: 
+  - **漫步**: 探索周围的精神地形。
+  - **埋藏**: 种下带有情绪色彩的心事种子。
+  - **拾起**: 仅能拾起物理距离 50 米内的心声。
 
+## ✨ 核心功能
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 1. 漫步 (Walk)
+进入应用即置身于抽象的等高线地图中。
+- **诗意定位**: 结合 Google Gemini API 生成的地理位置描述（例如：“上海 · 微雨的双子山”）。
+- **环境氛围**: 实时渲染的 CSS 粒子天气效果（目前默认为治愈的微雨模式）。
+- **距离感知**: 只有靠近（<50m）的种子才会发光并可交互。
+
+### 2. 埋藏 (Plant)
+记录当下的情绪与思绪。
+- **情绪色谱**: 喜悦 (枯叶黄)、悲伤 (雾霾蓝)、愤怒 (干玫瑰红)、平静 (鼠尾草绿)。
+- **多模态**: 支持文字记录与环境音采集（模拟）。
+
+### 3. 共鸣 (Resonate)
+- 查看附近的种子详情。
+- 点击“共鸣”而非简单的点赞，传递无声的陪伴。
+
+### 4. 角落 (Garden)
+- 个人专属的记忆花园，收藏自己种下的每一颗种子。
+
+## 🛠 技术栈
+
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS (自定义有机动画与配色)
+- **AI Integration**: Google Gemini API (用于生成富有诗意的地理位置文案)
+- **Fonts**: Noto Serif SC (衬线体), Zen Maru Gothic (圆体)
+
+## 📦 安装与运行
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+## 📝 许可证
+
+MIT

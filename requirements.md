@@ -1,26 +1,98 @@
-# Forest Whispers (Zhíniàn) - Product Requirements
+# Zhíniàn植念 - 产品需求文档 (PRD)
 
-## V1.3 - Atmospheric Immersion Update
-**Date**: 2026-01-29
+## V1.3 - 完整功能概览
+**日期**: 2026-01-29
 
-### 1. Weather Simulation (The Atmosphere)
-To enhance the "Here & Now" feeling, the home screen (ForestMap) must simulate ambient weather effects.
+## 1. 产品哲学 (Product Philosophy)
+- **核心理念**: “此时此地 (Here & Now)”。这不仅是一个社交应用，更是一个反效率、重感知的精神休憩空间。
+- **慢科技**: 摒弃无限流、红点通知和算法推荐。强调物理距离的限制和有机的交互节奏。
+- **隐喻**: 用户是“漫步者”，内容是“种子”，发布是“埋藏”，查看是“拾起”。
 
-- **Types**:
-  - **Sunny (晴天)**: Warm, subtle light leaks, gentle atmosphere.
-  - **Rainy (雨天)**: Vertical falling droplets, slightly darker/cooler tone, melancholic but cozy.
-  - **Windy (刮风)**: Faster movement of abstract terrain lines, floating "leaves" or particles.
-  - **Cloudy (多云)**: Soft, diffused light, neutral tone.
+---
 
-- **Behavior**:
-  - Weather is randomized on session start (or changed periodically) to provide variety.
-  - The effects must be **aesthetic and subtle (唯美)**, not distracting game-like effects.
-  - **Synchronization**: The "Poetic Location" text at the top must reflect the current weather (e.g., "Shanghai · Rainy Twin Mountains").
+## 2. 核心功能模块
 
-### 2. Time Synchronization (The Clock)
-- **Real-time**: The time displayed in the Poetic Location must match the user's actual local time.
-- **Format**: HH:MM (e.g., 15:42).
+### 2.1 漫步 (Walk / 主页)
+用户进入应用后的默认视图，展示当前位置周围的“精神地形”。
 
-### 3. General Vibe
-- Maintain the "Slow Tech" philosophy.
-- Animations should use CSS keyframes for performance and smoothness.
+- **抽象地图**:
+  - 不使用传统的街道地图，而是使用 SVG 贝塞尔曲线绘制流动的等高线，模拟有机的地形。
+  - **位置模拟**: 当前版本模拟定位在“上海双子山 (31.1850° N, 121.4890° E)”。
+  - **视觉风格**: 米色画布背景，配合动态呼吸的线条。
+
+- **诗意定位 (Poetic Location)**:
+  - 顶部常驻显示当前的时空状态。
+  - **动态文案**: 根据天气和时间动态生成（例如：“上海 · 微雨的双子山 15:42”）。
+  - **时间同步**: 显示实时设备时间。
+
+- **种子可视化**:
+  - **可视距离**: 50米 (VISIBILITY_DISTANCE_METERS)。超过50米的种子完全不可见，保持画面唯美。
+  - **距离渐变**: 
+    - 5m < 距离 < 50m: 显示为微弱的彩色光点。距离越近，光点越大、越亮，并带有微弱的脉冲动画。
+  - **交互距离**: < 5米 (GATHER_DISTANCE_METERS)。
+    - **大光点**: 当距离小于5米时，种子变为“大光点”，伴有强烈的呼吸动画和高亮光晕，并显示“拾起”标签。只有此时可点击交互。
+  - **颜色映射**:
+    - 喜悦 (Joy): 枯叶黄 (#E6C79C)
+    - 悲伤 (Sadness): 雾霾蓝 (#A3Bebb)
+    - 愤怒 (Anger): 干玫瑰红 (#D4A5A5)
+    - 平静 (Calm): 鼠尾草绿 (#B0C4B1)
+  - **空状态**: 根据距离动态提示（“这里有一颗种子在呼吸...”、“远处有微弱的光点...”或“附近的土壤很安静”）。
+
+### 2.2 埋藏 (Planting / 发布)
+位于底部导航栏中央的加号按钮，用于发布内容。
+
+- **交互流程**:
+  1.  **感知情绪 (Step 1)**: 询问“此刻的风，是什么颜色的？”。用户选择四种情绪基调之一（喜悦/悲伤/愤怒/平静）。
+  2.  **埋下种子 (Step 2)**:
+      - **文字**: 输入心事文本。
+      - **声音 (模拟)**: 点击麦克风图标采集环境音或语音（当前为模拟实现）。
+  3.  **完成**: 种子被“埋”在当前坐标，带有微小的随机偏移量，模拟自然散落感。
+
+### 2.3 拾起与共鸣 (Gather & Resonate / 详情)
+当用户点击范围内可交互的种子时触发。
+
+- **详情卡片**:
+  - 显示内容文本、发布时间。
+  - **播放声景**: 若包含音频，显示播放条。
+  - **纸质纹理**: 背景带有淡淡的纸张噪点纹理。
+  - **共鸣 (Resonate)**: 替代传统的“点赞”。用户点击共鸣后，按钮变为实心，并提示“有人听到了你的心声”。此操作会增加种子的共鸣计数。
+
+### 2.4 角落 (Garden / 个人主页)
+底部右侧导航进入。
+
+- **我的种子**: 以列表形式展示用户自己发布的所有内容。
+- **回顾**: 显示每颗种子的发布时间、内容摘要、情绪颜色标记以及获得的共鸣数。
+- **空状态文案**: “土壤正等待着你的第一颗种子。”
+
+### 2.5 环境氛围系统 (Weather System)
+增强沉浸感的视觉层。
+
+- **天气状态**: 支持 晴天 (Sunny)、雨天 (Rainy)、刮风 (Windy)、多云 (Cloudy)。
+  - *当前配置*: 默认锁定为 **雨天 (Rainy)** 以展示特定美学。
+- **视觉特效**:
+  - **雨天**: 屏幕前景有随机下落的半透明雨丝，整体色调叠加冷色滤镜。
+  - **晴天**: 模拟右上角光源的光斑呼吸效果。
+  - **刮风**: 漂浮的粒子/叶子动画，配合地形线条的加速流动。
+  - **动画技术**: 全程使用 CSS Keyframes (animate-rain, animate-leaf 等) 保证性能。
+
+---
+
+## 3. 技术与数据规范
+
+### 3.1 数据结构 (Types)
+- **Seed (种子)**: 包含 ID、匿名作者 ID、经纬度坐标、情绪类型、文本内容、是否含音频、时间戳、共鸣数。
+- **MoodType**: JOY, SADNESS, ANGER, CALM。
+
+### 3.2 视觉规范 (Design Token)
+- **字体**:
+  - 衬线体 (Serif): 'Noto Serif SC' (用于标题、正文、营造文学感)。
+  - 无衬线 (Sans): 'Zen Maru Gothic' (用于功能性小字)。
+- **色彩**:
+  - 主色 (Primary): #5D8572 (森绿)。
+  - 画布 (Canvas): #F9F7F2 (米白)。
+  - 文本 (Text): #4A4A4A (深灰，非纯黑)。
+
+### 3.3 模拟限制
+- **位置**: 目前硬编码为上海特定坐标，未调用真实 GPS。
+- **音频**: 录音功能仅为 UI 模拟，生成虚拟 Blob 数据。
+- **AI**: 集成了 Google Gemini SDK (services/geminiService.ts)，用于未来生成更智能的“诗意定位”描述，目前前端使用本地逻辑拼接字符串。
