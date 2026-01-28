@@ -13,7 +13,7 @@ export const generatePoeticLocation = async (lat: number, lng: number): Promise<
   try {
     const prompt = `
       The user is at coordinates ${lat}, ${lng}. 
-      Generate a very short, poetic, "Zhíniàn植念" style location description in Simplified Chinese.
+      Generate a very short, poetic, "一隅 Nook" style location description in Simplified Chinese.
       It should feel organic, grounding, and non-technical.
       Format: "City (or Natural Feature) · Contextual Detail Time".
       

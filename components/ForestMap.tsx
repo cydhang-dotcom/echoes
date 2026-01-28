@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Coordinates, Seed, WeatherType } from '../types';
 import { COLORS, GATHER_DISTANCE_METERS, VISIBILITY_DISTANCE_METERS } from '../constants';
 
@@ -91,6 +91,15 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
   // With scale 600,000 -> 1m approx 5.4px. 
   // 50m radius -> ~270px from center.
   const [scale] = useState(600000); 
+  const [hintMessage, setHintMessage] = useState<string | null>(null);
+  const [hintTimeout, setHintTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const showHint = (msg: string) => {
+    if (hintTimeout) clearTimeout(hintTimeout);
+    setHintMessage(msg);
+    const timeout = setTimeout(() => setHintMessage(null), 3000);
+    setHintTimeout(timeout);
+  };
 
   // Organic terrain lines
   const terrainPaths = useMemo(() => {
@@ -175,7 +184,13 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
               marginTop: `${yOffset}px`,
               zIndex: isReachable ? 30 : 10
             }}
-            onClick={() => isReachable && onSelectSeed(seed)}
+            onClick={() => {
+              if (isReachable) {
+                onSelectSeed(seed);
+              } else {
+                showHint("太远了，只有风声...");
+              }
+            }}
           >
              {/* The Seed Visual */}
              {isReachable ? (
@@ -191,9 +206,6 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
                       }}
                    />
                    <div className="absolute top-0 left-0 w-full h-full bg-white/50 rounded-full animate-ping opacity-30"></div>
-                   <span className="mt-3 text-[10px] font-serif text-text opacity-90 tracking-widest bg-white/60 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
-                     拾起
-                   </span>
                 </div>
              ) : (
                 // Distant State: Faint Seed
@@ -213,13 +225,15 @@ const ForestMap: React.FC<ForestMapProps> = ({ userLocation, seeds, onSelectSeed
         );
       })}
 
-      <div className="absolute bottom-24 left-0 w-full text-center pointer-events-none z-20">
-        <p className="font-serif italic text-primary/60 text-sm tracking-wide">
-           {seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < GATHER_DISTANCE_METERS)
-            ? "这里有一颗种子在呼吸..." 
-            : seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < VISIBILITY_DISTANCE_METERS)
-              ? "远处有微弱的光点..."
-              : "附近的土壤很安静"}
+      <div className="absolute bottom-24 left-0 w-full text-center pointer-events-none z-20 px-4">
+        <p className={`font-serif italic text-sm tracking-wide transition-all duration-500 ${hintMessage ? 'text-primary' : 'text-primary/60'}`}>
+           {hintMessage ? hintMessage : (
+             seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < GATHER_DISTANCE_METERS)
+              ? "这里有一颗种子在呼吸..." 
+              : seeds.some(s => getDistanceFromLatLonInM(userLocation.latitude, userLocation.longitude, s.location.latitude, s.location.longitude) < VISIBILITY_DISTANCE_METERS)
+                ? "远处有微弱的光点..."
+                : "附近的土壤很安静"
+           )}
         </p>
       </div>
     </div>
