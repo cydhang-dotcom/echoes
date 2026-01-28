@@ -12,36 +12,20 @@ export const COLORS = {
   }
 };
 
+// 上海双子山坐标 (模拟中心点)
+// 31.1850° N, 121.4890° E (Approximate location in Expo Culture Park)
+export const DEFAULT_LOCATION = { latitude: 31.1850, longitude: 121.4890 };
+
 export const MOCK_SEEDS: Seed[] = [
   {
     id: '1',
-    authorId: 'user_a',
-    location: { latitude: 0.0001, longitude: 0.0001 }, // Very close
-    mood: MoodType.SADNESS,
-    text: "雨停了，水坑里倒映着灰色的天空。",
-    hasAudio: true,
-    timestamp: Date.now() - 3600000,
-    resonates: 3,
-  },
-  {
-    id: '2',
-    authorId: 'user_b',
-    location: { latitude: -0.0002, longitude: 0.0002 }, // Close
+    authorId: 'shifu_lover',
+    location: { latitude: 31.1851, longitude: 121.4891 }, // Slightly offset to be nearby (within 50m)
     mood: MoodType.JOY,
-    text: "在旧图书馆附近发现了一株四叶草，夹在书里了。",
-    hasAudio: false,
-    timestamp: Date.now() - 7200000,
-    resonates: 12,
-  },
-  {
-    id: '3',
-    authorId: 'user_c',
-    location: { latitude: 0.001, longitude: -0.001 }, // Farther
-    mood: MoodType.ANGER,
-    text: "为什么我们总是这么匆忙？我错过了今天的日落。",
-    hasAudio: true,
-    timestamp: Date.now() - 86400000,
-    resonates: 0,
+    text: "我爱你师父",
+    hasAudio: false, // Simulated audio
+    timestamp: Date.now() - 60000,
+    resonates: 520,
   }
 ];
 

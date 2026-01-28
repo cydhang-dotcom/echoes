@@ -5,64 +5,48 @@ import SeedDetail from './components/SeedDetail';
 import GardenView from './components/GardenView';
 import { generatePoeticLocation } from './services/geminiService';
 import { Coordinates, MoodType, Seed, ViewState } from './types';
-import { MOCK_SEEDS } from './constants';
+import { MOCK_SEEDS, DEFAULT_LOCATION } from './constants';
 
 const App: React.FC = () => {
   // State
   const [view, setView] = useState<ViewState>(ViewState.WALK);
-  const [userLocation, setUserLocation] = useState<Coordinates>({ latitude: 0, longitude: 0 }); // Default
-  const [poeticLocation, setPoeticLocation] = useState<string>("正在定位...");
+  // Default to Shanghai Shuangzi Mountain
+  const [userLocation, setUserLocation] = useState<Coordinates>(DEFAULT_LOCATION); 
+  const [poeticLocation, setPoeticLocation] = useState<string>("上海 · 双子山");
   const [seeds, setSeeds] = useState<Seed[]>(MOCK_SEEDS);
   const [selectedSeed, setSelectedSeed] = useState<Seed | null>(null);
   const [mySeeds, setMySeeds] = useState<Seed[]>([]);
   
-  // Initialize Geolocation
+  // Simulation: No actual Geolocation API call
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      const watchId = navigator.geolocation.watchPosition(
-        async (position) => {
-          const newCoords = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          };
-          setUserLocation(newCoords);
-          
-          // Debounce poetic generation or check distance change to avoid API spam
-          // For demo, we just run it once or periodically. 
-          // Here strictly only running if location changes significantly effectively.
-        },
-        (error) => {
-          console.error("Geo error:", error);
-          setPoeticLocation("未知地点");
-        },
-        { enableHighAccuracy: true }
-      );
-      
-      return () => navigator.geolocation.clearWatch(watchId);
-    } else {
-      setPoeticLocation("无法获取位置");
-    }
+    console.log("模拟模式：已定位到上海双子山");
+    // In a real app, this would watch position. 
+    // Here we just keep the default static location.
   }, []);
 
-  // Effect to update poetic location periodically (every 2 minutes) or on significant move
+  // Effect to update poetic location periodically 
+  // In simulation, we stick to the default unless manually changed, 
+  // but we keep the logic structure if we wanted to use AI to describe the fixed location.
   useEffect(() => {
-    let isMounted = true;
-    const updatePoetic = async () => {
-       const desc = await generatePoeticLocation(userLocation.latitude, userLocation.longitude);
-       if (isMounted) setPoeticLocation(desc);
-    };
-    
-    // Initial call after small delay to ensure location is ready
-    const timer = setTimeout(updatePoetic, 2000);
-    return () => { isMounted = false; clearTimeout(timer); };
-  }, [userLocation.latitude, userLocation.longitude]);
+    // Optional: Call AI to describe the fixed location, or just keep the hardcoded string.
+    // We'll keep the hardcoded "上海 · 双子山" for the specific requirement.
+    // const updatePoetic = async () => {
+    //    const desc = await generatePoeticLocation(userLocation.latitude, userLocation.longitude);
+    //    setPoeticLocation(desc);
+    // };
+    // updatePoetic();
+  }, []);
 
   // Actions
   const handlePlant = (data: { mood: MoodType; text: string; audioBlob?: Blob }) => {
     const newSeed: Seed = {
       id: Date.now().toString(),
       authorId: 'me',
-      location: { ...userLocation },
+      location: { 
+        // Add slight random offset to simulate different spots nearby
+        latitude: userLocation.latitude + (Math.random() - 0.5) * 0.0002, 
+        longitude: userLocation.longitude + (Math.random() - 0.5) * 0.0002 
+      },
       mood: data.mood,
       text: data.text,
       hasAudio: !!data.audioBlob,

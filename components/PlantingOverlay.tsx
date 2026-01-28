@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MoodType, Seed } from '../types';
+import React, { useState } from 'react';
+import { MoodType } from '../types';
 import { COLORS } from '../constants';
 
 interface PlantingOverlayProps {
@@ -31,41 +31,17 @@ const PlantingOverlay: React.FC<PlantingOverlayProps> = ({ onClose, onPlant }) =
   const [audioBlob, setAudioBlob] = useState<Blob | undefined>(undefined);
   const [isExiting, setIsExiting] = useState(false);
 
-  // Audio Logic
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Mic access denied", err);
-      alert("如果不开启麦克风，风就听不到你的声音了。");
-    }
+  // Mock Audio Logic (No real microphone access)
+  const startRecording = () => {
+    setIsRecording(true);
+    // Simulate recording duration or state
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
+    setIsRecording(false);
+    // Create a dummy blob to simulate captured audio
+    const mockBlob = new Blob(["Simulated audio content"], { type: 'audio/webm' });
+    setAudioBlob(mockBlob);
   };
 
   const handlePlant = () => {
@@ -126,7 +102,7 @@ const PlantingOverlay: React.FC<PlantingOverlayProps> = ({ onClose, onPlant }) =
                     )}
                 </button>
                 <p className="mt-4 text-sm text-text/50 font-serif italic">
-                    {audioBlob ? "声音已采集" : (isRecording ? "正在聆听环境..." : "点击采集环境音")}
+                    {audioBlob ? "声音已采集(模拟)" : (isRecording ? "正在聆听环境..." : "点击采集环境音")}
                 </p>
             </div>
 
